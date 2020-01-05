@@ -6,10 +6,9 @@ import shlex
 import logging
 import os
 
-
-from iexfinance import get_historical_data
-
 import pandas as pd
+
+from backtest.database import InfluxDB
 
 log = logging.getLogger(__name__)
 
@@ -18,10 +17,10 @@ log = logging.getLogger(__name__)
 def get_equity_price(symbol: str,
                      start_date: datetime,
                      end_date: datetime) -> pd.DataFrame:
-    prices = \
-        get_historical_data(symbol, start=start_date, end=end_date,
-                            output_format='pandas')['close']
-    prices.index = pd.to_datetime(prices.index, utc=True)
+
+    idb = InfluxDB()
+    prices = idb.get_assets('AV', fromdate=start_date.date(), todate=end_date.date(), tickers=[symbol])['close']
+    prices.index = pd.to_datetime(prices.index.get_level_values(0), utc=True)
     prices.name = 'price'
 
     return prices

@@ -129,6 +129,8 @@ class FlexStatement:
              .resample('1D').sum()  # Sum per day to avoid daily duplicates
              .dropna()        # Skip weekends
              .sum(axis=1))    # Reduce multiple series into one
+        # Old code above assumes padding is NaN, but is 0 nowadays in pandas.
+        nav = nav[nav>0]
 
         df = pd.DataFrame(data={'nav': nav})
 
@@ -209,7 +211,8 @@ class FlexStatement:
         trades = self.flex_dict_to_df(
             model,
             ['Trades', 'Trade'],
-            date_field=('@tradeDate', '@tradeTime'), local_tz='US/Eastern')
+            date_field='@tradeDate', local_tz='US/Eastern')
+
         return trades
 
     def prior_period(self, model: str) -> Dict[str, pd.DataFrame]:
